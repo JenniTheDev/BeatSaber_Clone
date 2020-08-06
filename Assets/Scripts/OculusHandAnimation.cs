@@ -32,13 +32,11 @@ using UnityEngine;
 using System.Collections;
 using UnityEngine.XR;
 
-public class OculusHandAnimation : MonoBehaviour
-{
+public class OculusHandAnimation : MonoBehaviour {
     public XRNode HandType;
     public Animator HandAnimator;
 
-    private void Update()
-    {
+    private void Update() {
         bool grip = false;
         bool trigger = false;
         bool primaryAxisTouch = false;
@@ -59,12 +57,10 @@ public class OculusHandAnimation : MonoBehaviour
 
         //2. Trigger down
         float triggerTotal = 0f;
-        if (trigger)
-        {
+        if (trigger) {
             triggerTotal = 0.1f;
         }
-        if (triggerDown > 0.1f)
-        {
+        if (triggerDown > 0.1f) {
             triggerTotal = triggerDown;
         }
 

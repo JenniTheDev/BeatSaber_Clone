@@ -32,50 +32,84 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Slicer : MonoBehaviour
-{
+public class Slicer : MonoBehaviour {
     public GameObject gameManager;
 
-    private void OnTriggerEnter(Collider other)
-    {
-        // FILL IN
+    private void OnTriggerEnter(Collider other) {
+        SplitMesh(other.gameObject);
+        Destroy(other.gameObject);
+        Destroy(other.gameObject);
     }
 
     // Get a cutting plane from the rotation/position of the saber
-    private Plane GetPlane(GameObject go)
-    {
-        Plane rv = new Plane();
+    private Plane GetPlane(GameObject go) {
 
-        // FILL IN
+
+        //find the points that represent the slice in matching saber cut
+        Vector3 pt1 = transform.rotation * new Vector3(0, 0, 0);
+        Vector3 pt2 = transform.rotation * new Vector3(0, 1, 0);
+        Vector3 pt3 = transform.rotation * new Vector3(0, 0, 1);
+
+        //create plane and turn into cutting plane
+        Plane rv = new Plane();
+        rv.Set3Points(pt1, pt2, pt3);
+
 
         return rv;
     }
 
     // Clone a Mesh "half"
-    private Mesh CloneMesh(Plane p, Mesh oMesh, bool halve)
-    {
+    private Mesh CloneMesh(Plane p, Mesh oMesh, bool halve) {
+        //creates new mesh with vertex of original mesh, represents half an object
         Mesh cMesh = new Mesh();
+        cMesh.name = "slicedMesh";
+        Vector3[] vertices = oMesh.vertices;
+        for (int i = 0; i < vertices.Length; i++) {
+            bool side = p.GetSide(vertices[i]);
 
-        // FILL IN
+            if (side == halve) {
+                vertices[i] = p.ClosestPointOnPlane(vertices[i]);
+            }
+        }
+        //reassigns cloned mesh vertices, returns mesh as other half
+        cMesh.vertices = vertices;
+        cMesh.triangles = oMesh.triangles;
+        cMesh.normals = oMesh.normals;
+        cMesh.uv = oMesh.uv;
+
 
         return cMesh;
     }
 
     // Configure the GameObject
-    private GameObject MakeHalf(GameObject go, bool isLeft)
-    {
-        // 1.
+    private GameObject MakeHalf(GameObject go, bool isLeft) {
+
+        // Creates copy of source game object using Instantiate
         float sign = isLeft ? -1 : 1;
         GameObject half = Instantiate(go);
+        MeshFilter filter = half.GetComponent<MeshFilter>();
 
-        // FILL IN
+        // determines cutting plane that matches saber angle
+        //clones mesh using angle as slice, asigns new mesh to copy of GameObject
+        Plane cuttingPlane = GetPlane(go);
+        filter.mesh = CloneMesh(cuttingPlane, filter.mesh, isLeft);
+
+        //seperate halves and reenable physics
+        half.transform.position = go.transform.position + transform.position + transform.rotation * new Vector3(sign * 0.05f, 0, 0);
+        half.GetComponent<Rigidbody>().isKinematic = false;
+        half.GetComponent<Rigidbody>().useGravity = true;
+
+        //disable further slicing
+        half.GetComponent<Collider>().isTrigger = false;
+        Destroy(half, 2);
 
         return half;
     }
 
     // Make two GameObjects with "halves" of the original
-    private void SplitMesh(GameObject go)
-    {
-        // FILL IN
+    private void SplitMesh(GameObject go) {
+        GameObject leftHalf = MakeHalf(go, true);
+        GameObject rightHalf = MakeHalf(go, false);
+        GetComponent<AudioSource>().Play();
     }
 }
