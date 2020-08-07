@@ -33,12 +33,20 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR;
 
-public class ControllerHaptics : MonoBehaviour
-{
+public class ControllerHaptics : MonoBehaviour {
     public XRNode hand;
 
-    public void HapticEvent()
-    {
-        // FILL IN
+    public void HapticEvent() {
+        InputDevice device = InputDevices.GetDeviceAtXRNode(hand);
+
+        HapticCapabilities capabilities;
+        if (device.TryGetHapticCapabilities(out capabilities)) {
+            if (capabilities.supportsImpulse) {
+                uint channel = 0;
+                float amplitude = 0.5f;
+                float duration = 0.1f;
+                device.SendHapticImpulse(channel, amplitude, duration);
+            }
+        }
     }
 }

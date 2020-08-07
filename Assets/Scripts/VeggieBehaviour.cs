@@ -32,8 +32,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class VeggieBehaviour : MonoBehaviour
-{
+public class VeggieBehaviour : MonoBehaviour {
     public Vector3 movement;
     public Vector3 destination;
 
@@ -41,13 +40,31 @@ public class VeggieBehaviour : MonoBehaviour
 
     Rigidbody rb;
 
-    void Start()
-    {
+    void Start() {
         rb = GetComponent<Rigidbody>();
     }
 
-    void Update()
-    {
-        // FILL IN
+    void Update() {
+
+        // ignores physics and uses this script to move
+        if (rb.isKinematic) {
+
+            // Move from the origin to the position for the note in the first second
+            dTime += Time.deltaTime;
+
+            if (dTime < 1.0f) {
+                // Linearly interpolates along the x/y axis to the correct lane
+                Vector3 position = transform.position;
+                float z = position.z;
+                position.z = destination.z;
+
+                position = Vector3.Lerp(position, destination, dTime);
+                position.z = z;
+                transform.position = position;
+            }
+            // move on Z towards player
+            transform.Translate(movement * Time.deltaTime);
+        }
+
     }
 }
